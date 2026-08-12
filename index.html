@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus AI Studio — Powered by Gemini</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- โหลด Library สำหรับ Code Editor และตัวแปลงข้อความ AI -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ext-language_tools.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  :root {
+    /* ── Token system ──────────────────────────────────────────── */
+    --bg: #0a0d16;
+    --surface: #10141f;
+    --surface-2: #161c2c;
+    --surface-3: #1c2337;
+    --border: #232a3d;
+    --border-soft: #1a2032;
+
+    --code: #5b7fff;      /* ฝั่ง Editor — indigo */
+    --code-dim: #3d5adb;
+    --ai: #b565ff;        /* ฝั่ง AI — violet */
+    --ai-dim: #8c4bd6;
+    --moon: #ffd479;      /* สีจันทร์ Luau — ใช้อย่างประหยัด */
+
+    --ink: #eef1f8;
+    --ink-soft: #c7cde0;
+    --muted: #7d879e;
+    --muted-dim: #4d5a75;
+
+    --ok: #4ade80;
+    --radius: 14px;
+    --radius-sm: 9px;
+
+    --font-ui: 'Prompt', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  ::selection { background: var(--ai-dim); color: #fff; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 20px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted-dim); background-clip: padding-box; }
+
+  body {
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(91,127,255,0.10), transparent 60%),
+      radial-gradient(1000px 700px at 105% 10%, rgba(181,101,255,0.12), transparent 55%),
+      var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    height: 100vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Header ─────────────────────────────────────────────────── */
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 22px;
+    background: rgba(16,20,31,0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    z-index: 5;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 30px; height: 30px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--code), var(--ai));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.06) inset, 0 4px 14px -4px rgba(181,101,255,0.5);
+  }
+  .brand-mark svg { width: 16px; height: 16px; }
+  .brand-text { font-size: 17px; font-weight: 700; letter-spacing: 0.2px; }
+  .brand-text b {
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--code), var(--ai));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .brand-sub { font-size: 10.5px; color: var(--muted); font-weight: 500; letter-spacing: 0.4px; text-transform: uppercase; margin-top: 1px; }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--muted); font-weight: 500;
+    padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border-soft);
+    background: var(--surface);
+  }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+
+  .btn-back {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink-soft); cursor: pointer; text-decoration: none;
+    font-size: 13.5px; font-weight: 500;
+    transition: 0.18s ease;
+  }
+  .btn-back:hover { background: var(--surface-3); border-color: var(--muted-dim); color: var(--ink); transform: translateY(-1px); }
+
+  /* ── Workspace ──────────────────────────────────────────────── */
+  .workspace { display: flex; flex: 1; overflow: hidden; }
+
+  .editor-panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border); min-width: 0; }
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 18px; background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .panel-header-left { display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+  .file-dot { width: 8px; height: 8px; border-radius: 2px; background: var(--code); box-shadow: 0 0 8px rgba(91,127,255,0.7); }
+  .file-lang-tag {
+    font-family: var(--font-mono); font-size: 10.5px; color: var(--code);
+    background: rgba(91,127,255,0.12); border: 1px solid rgba(91,127,255,0.25);
+    padding: 2px 7px; border-radius: 5px;
+  }
+  #luauEditor { flex: 1; font-size: 15px; font-family: var(--font-mono) !important; }
+
+  /* ── AI Panel ───────────────────────────────────────────────── */
+  .ai-panel { width: 400px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--surface); }
+  .ai-panel .panel-header { background: linear-gradient(90deg, rgba(181,101,255,0.08), transparent); }
+  .ai-panel-left { display: flex; align-items: center; gap: 9px; }
+
+  /* ลายเซ็นของดีไซน์: สัญลักษณ์ "จันทร์เสี้ยว" — Lua แปลว่าดวงจันทร์ในภาษาโปรตุเกส
+     ใช้เป็นอวตารของ AI และเปล่งแสงตอนกำลังคิด */
+  .moon-avatar {
+    position: relative;
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    background: radial-gradient(circle at 32% 32%, #fff2cf, var(--moon) 45%, #c98f2e 100%);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 0 10px rgba(255,212,121,0.35);
+  }
+  .moon-avatar::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background: radial-gradient(circle at 70% 40%, var(--surface) 42%, transparent 43%);
+    opacity: 0.9;
+  }
+  .moon-avatar.thinking { animation: moon-pulse 1.6s ease-in-out infinite; }
+  @keyframes moon-pulse {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 0 10px rgba(255,212,121,0.35); }
+    50% { box-shadow: 0 0 0 1px rgba(255,255,255,0.12) inset, 0 0 22px rgba(255,212,121,0.75); }
+  }
+  .ai-title { font-size: 12.5px; font-weight: 700; color: var(--ai); }
+  .ai-title-sub { font-size: 10px; color: var(--muted); font-weight: 500; }
+
+  .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+
+  .msg-row { display: flex; gap: 9px; align-items: flex-end; max-width: 100%; }
+  .msg-row.user { flex-direction: row-reverse; align-self: flex-end; }
+  .msg-avatar { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; margin-bottom: 2px; }
+  .msg-avatar.user-avatar {
+    background: linear-gradient(135deg, var(--code), var(--code-dim));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #fff;
+  }
+
+  .message { padding: 11px 15px; border-radius: var(--radius); font-size: 14px; line-height: 1.55; max-width: 82%; }
+  .msg-user { background: linear-gradient(135deg, var(--code), var(--code-dim)); color: #fff; border-bottom-right-radius: 4px; }
+  .msg-ai { background: var(--surface-3); color: var(--ink); border: 1px solid var(--border-soft); border-bottom-left-radius: 4px; }
+  .msg-ai pre {
+    background: var(--bg); padding: 12px; border-radius: 9px; overflow-x: auto;
+    margin-top: 8px; border: 1px solid var(--border-soft); font-family: var(--font-mono);
+  }
+  .msg-ai code { font-family: var(--font-mono); font-size: 12.5px; }
+  .msg-ai p + p { margin-top: 8px; }
+
+  .empty-hint { font-size: 11px; color: var(--muted-dim); align-self: flex-start; margin-left: 31px; margin-top: -6px; }
+
+  .typing-indicator {
+    display: none; align-self: flex-start; align-items: center; gap: 9px;
+  }
+  .typing-bubble {
+    padding: 11px 15px; background: var(--surface-3); border: 1px solid var(--border-soft); border-radius: var(--radius); border-bottom-left-radius: 4px;
+    display: flex; gap: 4px;
+  }
+  .typing-bubble span { display: inline-block; width: 6px; height: 6px; background: var(--ai); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+  .typing-bubble span:nth-child(1) { animation-delay: -0.32s; }
+  .typing-bubble span:nth-child(2) { animation-delay: -0.16s; }
+  @keyframes bounce { 0%, 80%, 100% { transform: scale(0.4); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+
+  /* ── Input area ─────────────────────────────────────────────── */
+  .input-area { padding: 15px; border-top: 1px solid var(--border); background: var(--surface); }
+  .input-wrap { display: flex; gap: 8px; }
+  .input-wrap input {
+    flex: 1; padding: 12px 16px; border-radius: 11px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 14px; outline: none;
+    transition: 0.18s ease;
+  }
+  .input-wrap input:focus { border-color: var(--ai); box-shadow: 0 0 0 3px rgba(181,101,255,0.15); }
+  .input-wrap input::placeholder { color: var(--muted-dim); }
+
+  .btn-send {
+    width: 46px; flex-shrink: 0; border-radius: 11px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--code), var(--ai)); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.18s ease;
+  }
+  .btn-send svg { width: 18px; height: 18px; transform: translateX(-1px); }
+  .btn-send:hover { filter: brightness(1.12); transform: translateY(-1px); }
+  .btn-send:active { transform: translateY(0); }
+
+  /* ── Responsive ─────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .workspace { flex-direction: column; }
+    .editor-panel { border-right: none; border-bottom: 1px solid var(--border); flex: 1.1; }
+    .ai-panel { width: 100%; flex: 1; }
+    .brand-sub { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .moon-avatar.thinking, .typing-bubble span { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <header class="header">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 6L2 12L4 18M20 6L22 12L20 18M14 4L10 20" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <div class="brand-text">Nexus <b>AI Studio</b></div>
+        <div class="brand-sub">Luau Scripting Workbench</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-pill"><span class="status-dot"></span> Ace Editor พร้อมใช้งาน</div>
+      <!-- ปุ่มกลับไปหน้าหลัก (อย่าลืมแก้ชื่อไฟล์ index.html ให้ตรงกับหน้าหลักของคุณ) -->
+      <a href="https://oppw884-netizen.github.io/NexusHub.github.io/" class="btn-back">⬅ กลับหน้าหลัก</a>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- พื้นที่สำหรับพิมพ์ Code -->
+    <div class="editor-panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <span class="file-dot"></span> script.lua
+        </div>
+        <span class="file-lang-tag">LUAU</span>
+      </div>
+      <div id="luauEditor"></div>
+    </div>
+
+    <!-- พื้นที่สำหรับคุยกับ AI -->
+    <div class="ai-panel">
+      <div class="panel-header">
+        <div class="ai-panel-left">
+          <div class="moon-avatar" id="moonAvatar"></div>
+          <div>
+            <div class="ai-title">Gemini AI Assistant</div>
+            <div class="ai-title-sub">ผู้ช่วยเขียนสคริปต์ของคุณ</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-box" id="chatBox">
+        <div class="msg-row">
+          <div class="moon-avatar" style="width:22px;height:22px;"></div>
+          <div class="message msg-ai">สวัสดี! ฉันคือ Gemini AI 🤖<br>บอกสิ่งที่คุณต้องการให้ฉันเขียน หรือวางโค้ดที่ต้องการให้ฉันช่วยแก้ไขได้เลยครับ</div>
+        </div>
+        <div class="empty-hint">ลองพิมพ์ เช่น "เขียนสคริปต์ให้ผู้เล่นกระโดดสองครั้ง"</div>
+
+        <div class="typing-indicator" id="typingIndicator">
+          <div class="moon-avatar thinking" style="width:22px;height:22px;"></div>
+          <div class="typing-bubble"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <form class="input-wrap" id="chatForm">
+          <input type="text" id="userInput" placeholder="พิมพ์คำสั่งให้ AI..." autocomplete="off">
+          <button type="submit" class="btn-send" aria-label="ส่งข้อความ">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 12L20 4L14 20L11 13L4 12Z" stroke="white" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // --- 1. ตั้งค่าระบบ Code Editor (Ace) ---
+  ace.require('ace/ext/language_tools');
+  const editor = ace.edit('luauEditor');
+  editor.setTheme('ace/theme/one_dark');
+  editor.session.setMode('ace/mode/lua');
+  editor.setOptions({
+    fontSize: '15px',
+    enableBasicAutocompletion: true,
+    enableLiveAutocompletion: true,
+    showPrintMargin: false,
+  });
+  editor.setValue('-- ให้ AI เขียนสคริปต์ แล้วนำมาวางทดสอบที่นี่\nlocal player = game.Players.LocalPlayer\n', -1);
+
+  // --- 2. ตั้งค่าระบบ Gemini AI ---
+  // นำ API Key ของคุณมาใส่ในเครื่องหมายคำพูดด้านล่างนี้
+  const GEMINI_API_KEY = "AQ.Ab8RN6LHrDFMb_If-NUMPQyqbeWw8JUNaw5oZWl0HVWIrvWN3A";
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-pro:generateContent?key=${GEMINI_API_KEY}`;
+  const chatForm = document.getElementById('chatForm');
+  const userInput = document.getElementById('userInput');
+  const chatBox = document.getElementById('chatBox');
+  const typingIndicator = document.getElementById('typingIndicator');
+
+  // ฟังก์ชันแสดงข้อความบนหน้าแชท
+  function appendMessage(text, sender) {
+    const row = document.createElement('div');
+    row.className = 'msg-row' + (sender === 'user' ? ' user' : '');
+
+    const avatar = document.createElement('div');
+    if (sender === 'ai') {
+      avatar.className = 'moon-avatar';
+      avatar.style.width = '22px'; avatar.style.height = '22px';
+    } else {
+      avatar.className = 'msg-avatar user-avatar';
+      avatar.textContent = 'คุณ';
+    }
+
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${sender === 'user' ? 'msg-user' : 'msg-ai'}`;
+
+    if (sender === 'ai') {
+      msgDiv.innerHTML = marked.parse(text);
+    } else {
+      msgDiv.textContent = text;
+    }
+
+    row.appendChild(avatar);
+    row.appendChild(msgDiv);
+    chatBox.insertBefore(row, typingIndicator);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  // เมื่อผู้ใช้กดส่งข้อความ
+  chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = userInput.value.trim();
+    if (!text) return;
+    if (GEMINI_API_KEY === "ใส่_API_KEY_ของคุณที่นี่") {
+      alert("กรุณาใส่ API Key ของ Gemini ในโค้ดก่อนใช้งานครับ");
+      return;
+    }
+    appendMessage(text, 'user');
+    userInput.value = '';
+
+    typingIndicator.style.display = 'flex';
+    chatBox.scrollTop = chatBox.scrollHeight;
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: text + " (ตอบเป็นภาษาไทย และถ้ามีโค้ด Luau ให้ใส่ใน Markdown Block)" }] }]
+        })
+      });
+      const data = await response.json();
+
+      if (data.candidates && data.candidates.length > 0) {
+        const aiText = data.candidates[0].content.parts[0].text;
+        typingIndicator.style.display = 'none';
+        appendMessage(aiText, 'ai');
+      } else {
+        throw new Error("ไม่มีข้อมูลตอบกลับ");
+      }
+    } catch (error) {
+      console.error(error);
+      typingIndicator.style.display = 'none';
+      appendMessage('❌ ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อกับ API', 'ai');
+    }
+  });
+</script>
+</body>
+</html>
