@@ -294,9 +294,10 @@
   editor.setValue('-- ให้ AI เขียนสคริปต์ แล้วนำมาวางทดสอบที่นี่\nlocal player = game.Players.LocalPlayer\n', -1);
 
   // --- 2. ตั้งค่าระบบ Gemini AI ---
-  // นำ API Key ของคุณมาใส่ในเครื่องหมายคำพูดด้านล่างนี้
-  const GEMINI_API_KEY = "AQ.Ab8RN6LHrDFMb_If-NUMPQyqbeWw8JUNaw5oZWl0HVWIrvWN3A";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  // ไม่มี API key อยู่ในหน้าเว็บอีกต่อไป — เรียกผ่าน Worker proxy ที่เก็บ key ไว้ฝั่งเซิร์ฟเวอร์แทน
+  // แก้บรรทัดด้านล่างให้เป็น URL ของ Worker คุณ (ได้จากตอน deploy Cloudflare Worker)
+  const API_URL = "https://hidden-mud-3015.b62082826.workers.dev";
+
   const chatForm = document.getElementById('chatForm');
   const userInput = document.getElementById('userInput');
   const chatBox = document.getElementById('chatBox');
@@ -336,8 +337,8 @@ const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-
     e.preventDefault();
     const text = userInput.value.trim();
     if (!text) return;
-    if (GEMINI_API_KEY === "ใส่_API_KEY_ของคุณที่นี่") {
-      alert("กรุณาใส่ API Key ของ Gemini ในโค้ดก่อนใช้งานครับ");
+    if (API_URL.includes("YOUR-SUBDOMAIN")) {
+      alert("กรุณาใส่ URL ของ Worker proxy ก่อนใช้งานครับ (ดูขั้นตอนการตั้งค่า Cloudflare Worker)");
       return;
     }
     appendMessage(text, 'user');
@@ -355,17 +356,23 @@ const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-
       });
       const data = await response.json();
 
+      if (!response.ok) {
+        // Google ส่งรายละเอียด error กลับมาใน data.error.message เสมอเมื่อ status ไม่ใช่ 2xx
+        const detail = data?.error?.message || `HTTP ${response.status}`;
+        throw new Error(detail);
+      }
+
       if (data.candidates && data.candidates.length > 0) {
         const aiText = data.candidates[0].content.parts[0].text;
         typingIndicator.style.display = 'none';
         appendMessage(aiText, 'ai');
       } else {
-        throw new Error("ไม่มีข้อมูลตอบกลับ");
+        throw new Error("ไม่มีข้อมูลตอบกลับ (อาจโดน safety filter บล็อก)");
       }
     } catch (error) {
       console.error(error);
       typingIndicator.style.display = 'none';
-      appendMessage('❌ ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อกับ API', 'ai');
+      appendMessage(`❌ **เกิดข้อผิดพลาด**\n\n\`${error.message}\`\n\nตรวจสอบ: ชื่อโมเดลถูกต้องไหม, API key ยังใช้ได้ไหม, หรือใกล้โควต้ารึเปล่า`, 'ai');
     }
   });
 </script>
