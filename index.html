@@ -630,9 +630,8 @@ print("Hello, DexCode System!")</textarea>
                 const res = await fetch('/api/pastefy', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title: 'Protected Lua Script', content: code })
+                    body: JSON.stringify({ code })
                 });
-
                 const data = await res.json();
 
                 if (data.status === 'success') {
