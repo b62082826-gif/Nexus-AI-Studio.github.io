@@ -573,7 +573,7 @@ print("Hello, DexCode System!")</textarea>
             lineNumDiv.scrollTop = textarea.scrollTop;
         }
 
-        // -------------------------------------------------------------
+   // -------------------------------------------------------------
         // ฟังก์ชันหลัก 1: ส่งโค้ด Lua ไปประมวลผล Obfuscate (ยิงไปที่ API `/api/obfuscate`)
         // -------------------------------------------------------------
         async function runObfuscator() {
@@ -592,6 +592,7 @@ print("Hello, DexCode System!")</textarea>
             appendLog('INF', 'กำลังประมวลผล Obfuscation...');
 
             try {
+                // ปรับให้ยิงไปที่ /api/obfuscate เพื่อใช้งานบน Vercel
                 const res = await fetch('/api/obfuscate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -605,7 +606,7 @@ print("Hello, DexCode System!")</textarea>
                     updateLineNumbers('outResult', 'outLines');
                     appendLog('OK', 'เข้ารหัสสคริปต์สำเร็จเรียบร้อย!');
                 } else {
-                    appendLog('ERR', `Error: ${data.message}`);
+                    appendLog('ERR', `Error: ${data.message || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์'}`);
                 }
             } catch (err) {
                 appendLog('ERR', `Connection Error: ${err.message}`);
@@ -648,6 +649,17 @@ print("Hello, DexCode System!")</textarea>
         }
 
         // -------------------------------------------------------------
+        // เรียกทำงานคำสั่งแรกเริ่มเมื่อโหลดหน้าเว็บเสร็จสมบูรณ์
+        // -------------------------------------------------------------
+        window.onload = () => {
+            if (typeof updateLineNumbers === 'function') {
+                updateLineNumbers('srcInput', 'srcLines');
+                updateLineNumbers('outResult', 'outLines');
+            }
+            appendLog('INF', 'DexCode System Ready.');
+        };
+
+        // -------------------------------------------------------------
         // ฟังก์ชันหลัก 3: คัดลอกข้อความจาก Textarea หรือ Input ลง Clipboard
         // -------------------------------------------------------------
         function copyCode(elementId) {
@@ -657,14 +669,7 @@ print("Hello, DexCode System!")</textarea>
             appendLog('OK', 'คัดลอกลง คลิปบอร์ด สำเร็จ!');
         }
 
-        // -------------------------------------------------------------
-        // เรียกทำงานคำสั่งแรกเริ่มเมื่อโหลดหน้าเว็บเสร็จสมบูรณ์
-        // -------------------------------------------------------------
-        window.onload = () => {
-            updateLineNumbers('srcInput', 'srcLines');
-            updateLineNumbers('outResult', 'outLines');
-            appendLog('INF', 'DexCode System Ready.');
-        };
+
     </script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v3d52b47920f24c319d37e2661827c42b1787588026925" integrity="sha512-d9sL6GJLXn6fInD1+TVXhTcQOsmxeHfmHAvwGDIxp5TO+uo1fiWW7mHomMj4MLRlCsJDTqXzWLHJFFlPCEIj/A==" data-cf-beacon='{"version":"2024.11.0","token":"a68b9e9372f04856a9cd5f6686bed02f","r":1}' crossorigin="anonymous"></script>
 </body>
