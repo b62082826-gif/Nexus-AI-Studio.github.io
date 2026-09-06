@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เอกซ์โค้ด ลูอา</title>
+    <title>BObs Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- React & DOM -->
@@ -223,43 +223,92 @@
             };
 
             const handlePastebin = () => {
-                addLog('กำลังอัปโหลดไปยัง Pastebin...', 'info');
+                if (!output) { addLog('ไม่มีผลลัพธ์ให้อัปโหลด', 'error'); return; }
+                addLog('กำลังอัปโหลดไปยัง Pastebin... (เดโม)', 'info');
             };
+
+            // --- DEMO/MOCK OBFUSCATOR (client-side only, cosmetic — not real protection) ---
+            const randId = (len = 4) => {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+                let s = '';
+                for (let i = 0; i < len; i++) s += chars[Math.floor(Math.random() * chars.length)];
+                return s;
+            };
+
+            const toBase64Unicode = (str) => {
+                const bytes = new TextEncoder().encode(str);
+                let bin = '';
+                bytes.forEach(b => { bin += String.fromCharCode(b); });
+                return btoa(bin);
+            };
+
+            const chunkString = (str, size) => {
+                const out = [];
+                for (let i = 0; i < str.length; i += size) out.push(str.slice(i, i + size));
+                return out;
+            };
+
+            const mockObfuscate = (src) => {
+                const payload = toBase64Unicode(src);
+                const chunks = chunkString(payload, 60);
+                const varNames = Array.from({ length: 6 }, () => randId(3));
+                const [v1, v2, v3, v4, v5, v6] = varNames;
+
+                const banner = [
+                    '--[[',
+                    '\t\tProtected by DexCode Security Engine V2.0',
+                    '\t\tOfficial Store : DexCode.store',
+                    '\t\tAll rights reserved.',
+                    ']]',
+                    '',
+                    `-- This file is protected by dexcode V${Math.floor(Math.random()*3)+8} BETA-2.1 >> dexcode.lua.cz <<`,
+                ].join('\n');
+
+                const payloadLines = chunks.map(c => `\t"${c}"`).join(' ..\n');
+
+                const body = [
+                    `return ({["${randId(2).toUpperCase()}"]=(function(${v1},${v2},${v3})`,
+                    `\tlocal ${v4} = (`,
+                    payloadLines,
+                    `\t)`,
+                    `\tlocal ${v5} = {}`,
+                    `\tfor ${v6}=1,#${v4} do ${v5}[${v6}]=${v4}:byte(${v6}) end`,
+                    `\treturn loadstring(${v1}.b64decode and ${v1}.b64decode(${v4}) or ${v4})`,
+                    `end)})`
+                ].join('\n');
+
+                return `${banner}\n${body}`;
+            };
+            // --- END DEMO OBFUSCATOR ---
 
             const handleRun = async () => {
                 if (isLoading) return;
+                if (!source.trim()) { addLog('กรุณาใส่ซอร์สโค้ดก่อนดำเนินการ', 'error'); return; }
+
                 setIsLoading(true);
                 addLog('เริ่มดำเนินการปกปิดข้อมูลด้วย DexCode...', 'info');
                 setIsOutputVisible(true);
 
-                try {
-                    const startTime = performance.now();
-                    const response = await fetch('/obfuscate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ source })
-                    });
-                    const data = await response.json().catch(() => null);
-                    if (!response.ok) {
-                        const errMsg = (data && data.message) ? data.message : `HTTP Error: ${response.status}`;
-                        throw new Error(errMsg);
-                    }
-                    const duration = (performance.now() - startTime).toFixed(2);
-                    if (data && data.status === 'success' && data.result) {
+                const startTime = performance.now();
+
+                // Simulated processing delay so the loading state/animation is visible.
+                setTimeout(() => {
+                    try {
+                        const result = mockObfuscate(source);
+                        const duration = (performance.now() - startTime).toFixed(2);
+
                         setIsOutputVisible(false);
                         setTimeout(() => {
-                            setOutput(data.result);
-                            addLog(`ความพยายามสำเร็จเรียบร้อย! (${duration}ms)`, 'success');
+                            setOutput(result);
+                            addLog(`ความพยายามสำเร็จเรียบร้อย! (${duration}ms) [โหมดเดโม — ไม่ใช่การป้องกันจริง]`, 'success');
                             setTimeout(() => setIsOutputVisible(true), 50);
                         }, 50);
-                    } else {
-                        throw new Error((data && data.message) ? data.message : 'ไม่พบผลลัพธ์จากเซิร์ฟเวอร์');
+                    } catch (err) {
+                        addLog(err.message, 'error');
+                    } finally {
+                        setIsLoading(false);
                     }
-                } catch (err) {
-                    addLog(err.message, 'error');
-                } finally {
-                    setIsLoading(false);
-                }
+                }, 600 + Math.random() * 500);
             };
 
             return (
@@ -273,7 +322,7 @@
                         </div>
                         <div className="flex items-center gap-6">
                             <a href="#" className="nav-link"><i className="fas fa-code"></i> ผู้ปกปิดข้อมูล</a>
-                            <a href="https://discord.gg/SnK744ZM9Y" target="_blank" rel="noreferrer" className="nav-link">
+                            <a href="https://discord.gg/zsAj65ErAB" target="_blank" rel="noreferrer" className="nav-link">
                                 <i className="fab fa-discord"></i> ฝากสนับสนุน Discord
                             </a>
                         </div>
