@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BObs Hub</title>
+    <title>BObs Hub ลูอา</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- React & DOM -->
@@ -167,14 +167,14 @@
         };
 
         const App = () => {
-            const [source, setSource] = useState('-- Write or Paste your Lua script here\nprint("Hello, DexCode System!")');
+            const [source, setSource] = useState('-- Write or Paste your Lua script here\nprint("Hello, BObs Hub System!")');
             const [output, setOutput] = useState('');
             const [isLoading, setIsLoading] = useState(false);
             const [isOutputVisible, setIsOutputVisible] = useState(true);
             const [isDragging, setIsDragging] = useState(false);
 
             const [logs, setLogs] = useState([
-                { time: new Date().toLocaleTimeString('th-TH', { hour12: false }), type: 'info', msg: 'ระบบ DexCode พร้อมใช้งานแล้ว' },
+                { time: new Date().toLocaleTimeString('th-TH', { hour12: false }), type: 'info', msg: 'ระบบ BObs Hub พร้อมใช้งานแล้ว' },
                 { time: new Date().toLocaleTimeString('th-TH', { hour12: false }), type: 'info', msg: 'เกี่ยวกับ Obfuscation...' },
             ]);
 
@@ -256,12 +256,10 @@
 
                 const banner = [
                     '--[[',
-                    '\t\tProtected by DexCode Security Engine V2.0',
-                    '\t\tOfficial Store : DexCode.store',
-                    '\t\tAll rights reserved.',
+                    '\t\tProtected by BObs Hub',
                     ']]',
                     '',
-                    `-- This file is protected by dexcode V${Math.floor(Math.random()*3)+8} BETA-2.1 >> dexcode.lua.cz <<`,
+                    '-- This file is protected by BObs Hub',
                 ].join('\n');
 
                 const payloadLines = chunks.map(c => `\t"${c}"`).join(' ..\n');
@@ -286,7 +284,7 @@
                 if (!source.trim()) { addLog('กรุณาใส่ซอร์สโค้ดก่อนดำเนินการ', 'error'); return; }
 
                 setIsLoading(true);
-                addLog('เริ่มดำเนินการปกปิดข้อมูลด้วย DexCode...', 'info');
+                addLog('เริ่มดำเนินการปกปิดข้อมูลด้วย BObs Hub...', 'info');
                 setIsOutputVisible(true);
 
                 const startTime = performance.now();
@@ -318,7 +316,7 @@
                     <div className="h-[52px] bg-[var(--panel)] flex items-center justify-between px-5 border-b border-[var(--border)] select-none">
                         <div className="flex items-center gap-2.5">
                             <i className="fas fa-shield-halved text-[17px]" style={{ color: 'var(--accent)' }}></i>
-                            <span className="text-[15px] font-semibold text-white">เอกซ์โค้ด ลูอา</span>
+                            <span className="text-[15px] font-semibold text-white">BObs Hub ลูอา</span>
                         </div>
                         <div className="flex items-center gap-6">
                             <a href="#" className="nav-link"><i className="fas fa-code"></i> ผู้ปกปิดข้อมูล</a>
