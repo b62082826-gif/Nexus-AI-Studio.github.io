@@ -347,7 +347,7 @@ nav.links a.nav-dl:hover { background: var(--fg); color: var(--bg); opacity: .9;
             <li>จัดรูปโค้ดให้อ่านง่าย และตั้ง UTF-8 ให้อัตโนมัติ</li>
             <li class="no">ไฟล์อาจใหญ่ถ้าหน้านั้นมีรูปเยอะ</li>
           </ul>
-          <p class="out">output/mirrored_page.html</p>
+          <p class="out">output/โดเมน_วันที่_เวลา/mirrored_page.html</p>
         </article>
 
         <article class="mode">
@@ -357,10 +357,10 @@ nav.links a.nav-dl:hover { background: var(--fg); color: var(--bg); opacity: .9;
           <ul>
             <li>เก็บได้สูงสุด 15 หน้าต่อครั้ง</li>
             <li>ฝัง CSS และ JavaScript ในแต่ละหน้า</li>
-            <li>หน้าแรกบันทึกเป็น index.html</li>
+            <li>หน้าแรกบันทึกเป็น index.html ในโฟลเดอร์ของรอบนั้น</li>
             <li class="no">รูปภาพยังชี้ไปที่เว็บต้นฉบับ ไม่ได้ดาวน์โหลดมาเก็บ</li>
           </ul>
-          <p class="out">output/website_template/</p>
+          <p class="out">output/โดเมน_วันที่_เวลา/</p>
         </article>
       </div>
     </section>
@@ -378,7 +378,7 @@ nav.links a.nav-dl:hover { background: var(--fg); color: var(--bg); opacity: .9;
           <div><h3>เลือกโหมดแล้วกดปุ่ม</h3><p>จุดบนหน้าต่างจะกะพริบเร็วขึ้นระหว่างทำงาน และมีตัวเลขขนาดข้อมูลกับความเร็วอัปเดตให้เห็นตลอด</p></div>
         </li>
         <li>
-          <div><h3>รับไฟล์ในโฟลเดอร์ output</h3><p>เมื่อเสร็จ หัวข้อจะเปลี่ยนเป็น &ldquo;เสร็จเรียบร้อย&rdquo; พร้อมลิงก์เปิดตำแหน่งที่บันทึก</p></div>
+          <div><h3>รับไฟล์ในโฟลเดอร์ output</h3><p>เมื่อเสร็จ หัวข้อจะเปลี่ยนเป็น &ldquo;เสร็จเรียบร้อย&rdquo; พร้อมลิงก์เปิดตำแหน่งที่บันทึก แต่ละรอบแยกเป็นโฟลเดอร์ใหม่ตามชื่อเว็บและเวลา ไม่เขียนทับของเก่า</p></div>
         </li>
       </ol>
     </section>
@@ -431,10 +431,10 @@ python gui_scraper.py</pre>
       <div class="dl-band">
         <div>
           <h2>ดาวน์โหลด Web Cloner</h2>
-          <p>WebCloner.exe สำหรับ Windows 11 &middot; เวอร์ชัน 1.0 ดับเบิลคลิกเปิดใช้ได้เลย ไม่ต้องติดตั้ง Python</p>
+          <p>WebCloner.zip สำหรับ Windows 11 &middot; เวอร์ชัน 1.0 โหลดแล้วคลิกขวา Extract All จากนั้นดับเบิลคลิก WebCloner.exe เปิดใช้ได้เลย ไม่ต้องติดตั้ง Python</p>
         </div>
         <div class="dl-act">
-          <a class="btn primary" href="WebCloner.exe" data-dl download><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16"/></svg>ดาวน์โหลด .exe</a>
+          <a class="btn primary" href="WebCloner.exe" data-dl download><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16"/></svg>ดาวน์โหลด .zip</a>
           <span>ใช้กับเว็บที่คุณมีสิทธิ์คัดลอกเท่านั้น</span>
         </div>
       </div>
@@ -445,7 +445,7 @@ python gui_scraper.py</pre>
       <div class="faq">
         <details>
           <summary>ไฟล์ที่ได้อยู่ที่ไหน</summary>
-          <p>อยู่ในโฟลเดอร์ output ที่โปรแกรมสร้างข้างไฟล์สคริปต์ หรือข้างไฟล์ .exe ถ้ารันแบบ exe ปุ่ม &ldquo;เปิดตำแหน่งที่บันทึก&rdquo; หลังเสร็จจะพาไปที่นั่นเลย</p>
+          <p>อยู่ในโฟลเดอร์ output ที่โปรแกรมสร้างข้างไฟล์สคริปต์ หรือข้างไฟล์ .exe ถ้ารันแบบ exe โดยแต่ละรอบจะได้โฟลเดอร์ย่อยชื่อ เช่น example.com_2026-11-15_123045 ปุ่ม &ldquo;เปิดตำแหน่งที่บันทึก&rdquo; หลังเสร็จจะพาไปที่นั่นเลย</p>
         </details>
         <details>
           <summary>ทำไมได้หน้าเปล่าหรือไม่ครบ</summary>
@@ -475,9 +475,8 @@ python gui_scraper.py</pre>
 
 <script>
 (function () {
-  // Every download button reads this one value. Keep WebCloner.exe next to index.html,
-  // or replace it with a full link such as "https://example.com/WebCloner.exe".
-  var DOWNLOAD_URL = "WebCloner.exe";
+  // Every download button reads this one value (direct-download link to the .zip on Google Drive).
+  var DOWNLOAD_URL = "https://drive.google.com/uc?export=download&id=1S_fEe20Ccl2d8Jg2Pyy5eKI6EHg8CiwN";
   document.querySelectorAll("[data-dl]").forEach(function (a) { a.setAttribute("href", DOWNLOAD_URL); });
 
   // dot matrix in the app replica
